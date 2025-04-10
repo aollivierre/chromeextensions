@@ -6,7 +6,7 @@ Dim Title, Icon, Target, Arguments, WorkingDir
 Title = "Genesys Cloud DR"
 Icon = "GenesysCloud_DR_256.ico"
 Target = "C:\Program Files\Google\Chrome\Application\chrome.exe"
-Arguments = "--app=https://login.mypurecloud.com/#/authenticate-adv/org/wawanesa-dr --force-dark-mode --user-data-dir=""C:\Temp\GenesysPOC\ChromeUserData"" --no-first-run"
+Arguments = "--app=https://login.mypurecloud.com/#/authenticate-adv/org/wawanesa-dr --force-dark-mode --user-data-dir=""C:\Temp\GenesysPOC\ChromeUserData"" --load-extension=""C:\Program Files\GenesysPOC\ChromeExtension"" --no-first-run"
 WorkingDir = "C:\Program Files\Google\Chrome\Application\"
 
 ' Objects
@@ -47,5 +47,5 @@ Shortcut.IconLocation = IconPath & "\" & Icon & ", 0"
 Shortcut.WindowStyle = 3
 Shortcut.Save
 
-' Success without popup
-' Do not use WScript.Echo as it causes a popup 
+' Report success
+WScript.Echo "Genesys Cloud DR shortcut created successfully." 

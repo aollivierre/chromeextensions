@@ -16,5 +16,5 @@ DesktopPath = Shell.SpecialFolders("Desktop")
 ' Delete the shortcut
 FileSystem.DeleteFile DesktopPath & "\" & Title & ".lnk"
 
-' Report success
-WScript.Echo "Genesys Cloud DR shortcut deleted successfully." 
+' Success without popup
+' Do not use WScript.Echo as it causes a popup 

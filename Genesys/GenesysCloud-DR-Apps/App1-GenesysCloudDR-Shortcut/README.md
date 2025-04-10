@@ -14,7 +14,7 @@ These scripts are completely self-contained and don't require command-line argum
 
 - `CreateDRShortcut.vbs`: Creates the shortcut with hardcoded correct paths
 - `DetectDRShortcut.vbs`: Detects if the shortcut is already installed
-- `DeleteDRShortcut.vbs`: Removes the shortcut
+- `DeleteDRShortcut.vbs`: Removes the shortcut from the user's desktop
 - `Shortcut-Truncation-Note.md`: Important documentation about the Windows shortcut properties display limitation
 
 ### Alternative Approaches
@@ -30,19 +30,56 @@ These files require parameters and may have issues with paths containing spaces:
 
 ## SCCM Configuration
 
-### Option 1: Use Self-Contained VBS Scripts (Recommended)
-- **Installation Program**: `cscript //nologo CreateDRShortcut.vbs`
-- **Uninstallation Program**: `cscript //nologo DeleteDRShortcut.vbs`
-- **Detection Method**: Use a script with `cscript //nologo DetectDRShortcut.vbs`
+### Recommended Configuration for 100% Silent Operation
+For completely silent installation with no UI or popups:
 
-### Option 2: Use CMD Wrappers
-- **Installation Program**: `cmd.exe /c Install.cmd`
-- **Uninstallation Program**: `cmd.exe /c Uninstall.cmd`
-- **Detection Method**: Use a script with `cmd.exe /c Detect.cmd`
+- **Installation Program**: `wscript.exe //B "CreateDRShortcut.vbs"`
+- **Uninstallation Program**: `wscript.exe //B "DeleteDRShortcut.vbs"`
+- **Detection Method**: `cscript.exe //nologo "DetectDRShortcut.vbs"`
+
+The `//B` flag runs the script in background mode, completely suppressing all UI elements, popups, and error messages. This ensures a 100% silent user experience.
+
+### Alternative Configurations
+These may still potentially show UI elements or brief console windows:
+
+- **Option 1**: `cscript //nologo CreateDRShortcut.vbs` (console-based, may flash briefly)
+- **Option 2**: `cmd.exe /c Install.cmd` (uses command wrappers)
 
 - **Dependencies**: Add App2-GenesysCloudDR-Extension as a dependency
 - **User Experience**: Install for user
 - **Target**: User-targeted application
+
+### Application Display Name in Software Center
+To set the correct application name that users see in Software Center:
+1. In the SCCM console, go to the **Application** properties
+2. On the **General** tab, set the **Name** and **User-Friendly Name** fields to "Genesys Cloud DR"
+3. You can also set a description and other metadata that will appear in Software Center
+4. The display name is not controlled by the scripts but by these application properties in SCCM
+
+## Preventing Windows Script Host Popups
+
+The VBS scripts have been carefully designed to run silently without showing message boxes to users:
+
+- **Problem:** Using `WScript.Echo` in VBS scripts causes a Windows Script Host popup message that interrupts the user experience
+- **Solution 1:** We've removed all `WScript.Echo` statements from the installation and uninstallation scripts
+- **Solution 2:** Using `wscript.exe //B` to run scripts in background mode, which suppresses all UI elements including popups
+- **Exception:** The detection script still uses `WScript.Echo "DETECTED"` because it's required for SCCM detection, but this doesn't cause a popup in the detection context
+- **Implementation:** If you need to add any debugging or status messages, avoid using `WScript.Echo` as it will generate popups
+- **Command Line Flags:**
+  - `//B` - Runs in background mode with no UI (best for silent installation)
+  - `//nologo` - Suppresses script host banner but doesn't prevent popups
+
+## Local Testing Outside SCCM
+
+To test the silent behavior locally outside of SCCM:
+
+1. **Test silent install:** `wscript.exe //B CreateDRShortcut.vbs`
+2. **Test silent uninstall:** `wscript.exe //B DeleteDRShortcut.vbs`
+3. **Test detection:** `cscript.exe //nologo DetectDRShortcut.vbs`
+4. **Simulate SYSTEM context:** Use PsExec from Sysinternals: `psexec -s -i cmd.exe` then run the commands
+5. **Verify by checking:** 
+   - The shortcut appears/disappears without any visible UI
+   - No popup dialogs appear at any point during execution
 
 ## Notes
 
@@ -63,4 +100,5 @@ The correct shortcut target format is:
 - The self-contained VBS scripts (`CreateDRShortcut.vbs`, etc.) are the most reliable way to create the correct shortcut with proper quotes around the paths.
 - If you're having issues with quotes in paths, use the self-contained VBS scripts as they have the correct format hardcoded.
 - If you encounter issues with one approach, try another as they use different methods of creating the shortcut.
-- When checking the shortcut in the properties window, be aware that the Target field may appear truncated due to Windows display limitations. This does not affect functionality. 
+- When checking the shortcut in the properties window, be aware that the Target field may appear truncated due to Windows display limitations. This does not affect functionality.
+- If you're seeing Windows Script Host popups during installation, change the installation command to use `wscript.exe //B` instead of `cscript //nologo`. 

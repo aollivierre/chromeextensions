@@ -39,6 +39,7 @@ If InStr(1, Shortcut.Arguments, ArgumentPattern, 1) > 0 Then
 End If
 
 ' Output "DETECTED" if both target and arguments match (for SCCM)
+' This Echo is required for detection and doesn't cause a popup in detection scripts
 If TargetMatch = True AND ArgumentMatch = True Then
     WScript.Echo "DETECTED"
 End If 

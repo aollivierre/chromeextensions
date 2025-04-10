@@ -1,0 +1,29 @@
+{
+    "version":  "1.0",
+    "manifest_version":  3,
+    "content_scripts":  [
+                            {
+                                "run_at":  "document_start",
+                                "all_frames":  true,
+                                "matches":  [
+                                                "https://login.mypurecloud.com/*",
+                                                "https://*.mypurecloud.com/*"
+                                            ],
+                                "css":  [
+                                            "dr-style.css"
+                                        ],
+                                "js":  [
+                                           "dr-script.js"
+                                       ]
+                            }
+                        ],
+    "description":  "Adds prominent visual cues to DR environments in Google Chrome",
+    "permissions":  [
+                        "activeTab"
+                    ],
+    "name":  "Genesys DR Environment Indicator",
+    "host_permissions":  [
+                             "https://login.mypurecloud.com/*",
+                             "https://*.mypurecloud.com/*"
+                         ]
+}

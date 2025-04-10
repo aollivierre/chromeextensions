@@ -1,0 +1,15 @@
+{
+    "manifest_version": 3,
+    "name": "Genesys DR Environment Indicator",
+    "version": "1.0",
+    "description": "Adds prominent visual cues to DR environments in Google Chrome",
+    "content_scripts": [
+        {
+            "matches": ["https://apps.dr1.pure.cloud/*"],
+            "css": ["dr-style.css"],
+            "all_frames": true,
+            "run_at": "document_start"
+        }
+    ],
+    "permissions": ["activeTab"]
+}

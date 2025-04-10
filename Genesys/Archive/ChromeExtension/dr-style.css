@@ -1,0 +1,10 @@
+/* Add a prominent red border to the top of the page */
+body::before {
+  content: "DR ENVIRONMENT";
+  display: block;
+  background-color: #ff0000;
+  color: white;
+  text-align: center;
+  padding: 5px;
+  font-weight: bold;
+}

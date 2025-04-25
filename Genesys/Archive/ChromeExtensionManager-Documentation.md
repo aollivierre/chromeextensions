@@ -1,15 +1,23 @@
 # Chrome Extension Manager - Documentation
 
+**IMPORTANT NOTE: Development/Testing Use Only**
+
+> This script (`Enable-LocalExtensions.ps1`) and the techniques it employs (modifying local Chrome policies to allow unpacked extensions, using `--load-extension`, enabling developer mode) are intended **strictly for local development and testing purposes**. These methods are **NOT suitable or supported for enterprise-wide deployment** of extensions using management tools like SCCM or Intune.
+>
+> **Enterprise deployment requires publishing extensions to the Chrome Web Store** (even as 'Unlisted') and deploying them via policies (`ExtensionInstallAllowlist`, `ExtensionInstallForcelist`) that reference the Web Store ID. Policies pointing to local paths or relying on developer mode settings are unreliable and unsupported for managed environments.
+
 ## Overview
 
-The Chrome Extension Manager script (`Enable-LocalExtensions.ps1`) is a PowerShell utility for managing Chrome extensions in enterprise environments. This tool helps IT administrators:
+The Chrome Extension Manager script (`Enable-LocalExtensions.ps1`) is a PowerShell utility primarily designed to **assist developers in setting up their local environment** for testing unpacked Chrome extensions. It helps administrators or developers to temporarily adjust local Chrome policies that might otherwise block the loading of unpacked extensions during development.
+
+It can help IT administrators or developers:
 
 - Configure Chrome policies for extension management
 - View and manage the extension allowlist and forcelist
 - Add new extensions to the allowlist or forcelist
 - Create necessary registry keys and directories
 - Remove wildcard blocks that prevent extension installation
-- Configure local extension loading
+- Configure local extension loading **(for testing/development)**
 
 ## Key Features
 
@@ -20,6 +28,8 @@ The Chrome Extension Manager script (`Enable-LocalExtensions.ps1`) is a PowerShe
 - **Policy Verification**: Verifies that all required policies are correctly set
 - **Extension Name Resolution**: Efficiently fetches extension names from the Chrome Web Store
 - **Caching**: Stores extension names locally for fast retrieval in subsequent runs
+- **Set allowed local extension paths**: Sets `AllowedLocalExtensionPaths` **(primarily for development)**.
+- **Disable external extension blocking**: Sets `BlockExternalExtensions` to 0 **(use with caution, generally not recommended for production environments)**.
 
 ## Usage
 
@@ -43,10 +53,13 @@ The script presents a comprehensive menu with various options:
 - **Disable external extension blocking**: Sets BlockExternalExtensions to 0
 - **Verify all Chrome policies**: Checks if all policies are set correctly
 
-#### Chrome Web Store Extensions
-- **Add extension to allowlist**: Users can install these extensions if they want
+#### Chrome Web Store Extensions (Policy Management)
+
+**Note:** While this script provides functions to manage Allowlist/Forcelist registry keys, remember that for these policies to work correctly in an enterprise context, they **must** reference extensions published on the Chrome Web Store using their Web Store IDs. Adding local paths or non-Web Store IDs here will not result in reliable enterprise deployment.
+
+- **Add extension to allowlist**: Users can install these extensions if they want (Requires Web Store ID for enterprise use).
 - **View and manage allowlist extensions**: Shows and manages extensions in the allowlist
-- **Add extension to forcelist**: Auto-installs for all users
+- **Add extension to forcelist**: Auto-installs for all users (Requires Web Store ID and update URL for enterprise use).
 - **View and manage forcelist extensions**: Shows and manages force-installed extensions
 
 #### Other Operations
@@ -79,7 +92,7 @@ The script manages the following registry locations:
 
 ## Technical Notes
 
-- **Windows/Mac Requirements**: Extensions must be from the Chrome Web Store for Windows and Mac OS
+- **Windows/Mac Requirements**: For **enterprise policy deployment** (Allowlist/Forcelist), extensions **must** be from the Chrome Web Store for Windows and Mac OS. Local loading methods manipulated by this script are for development/testing only.
 - **Caching**: Extension names are cached in the registry for performance
 - **Enterprise Deployment**: Compatible with SCCM and other enterprise deployment tools
 - **Policy Application**: Changes take effect after policy refresh or browser restart 

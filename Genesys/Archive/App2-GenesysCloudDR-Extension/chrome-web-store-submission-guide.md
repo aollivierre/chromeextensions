@@ -1,11 +1,13 @@
 # Chrome Web Store Submission Guide for Genesys DR Extension
 
+**Context:** For enterprise deployment (SCCM, Intune, etc.) on Windows and macOS, publishing your extension to the Chrome Web Store is the **required and only supported method** for reliable deployment via policies like `ExtensionInstallForcelist`. Local CRX files or loading unpacked extensions via command line (`--load-extension`) are not suitable for enterprise deployment.
+
 ## Visibility Options
 
 Good news! You can publish your extension as **unlisted**, which is perfect for internal company use:
 
-- **Unlisted**: Extension won't appear in search results or categories, but will have a public URL you can share with your team
-- **Public**: Visible to everyone in the Chrome Web Store (not recommended for your use case)
+- **Unlisted**: Extension won't appear in search results or categories, but will have a public URL you can share with your team and use in deployment policies. This is the recommended option for internal tools
+- **Public**: Visible to everyone in the Chrome Web Store (generally not needed for internal enterprise tools)
 
 ## Required Information for Submission
 
@@ -74,15 +76,18 @@ Good news! You can publish your extension as **unlisted**, which is perfect for 
 
 ## Rejection Contingency Plan
 
-If your extension gets rejected for any reason:
+If your extension gets rejected during the Web Store review process:
 
-1. Read the feedback carefully
-2. Make required changes
-3. Resubmit
+1.  Read the reviewer's feedback carefully.
+2.  Make the required changes to your extension's code or manifest.
+3.  Resubmit the updated extension for review.
 
-If you continue having issues with the Web Store, you can:
-1. Use the enterprise self-hosting option: https://developer.chrome.com/docs/extensions/mv3/external_extensions/
-2. Continue using the local extension loading method with your script
+If you face persistent issues with Web Store approval that cannot be resolved, **true enterprise deployment becomes significantly more challenging**. The alternative methods have major drawbacks:
+
+1.  **Enterprise Self-Hosting:** This involves hosting the `.crx` file and an update manifest XML file on your own internal web server. It's complex to set up, requires careful management of update manifests and signing keys, and may still face policy restrictions. See: [https://developer.chrome.com/docs/extensions/how-to/distribute/self-host-extensions](https://developer.chrome.com/docs/extensions/how-to/distribute/self-host-extensions)
+2.  **Local Loading (`--load-extension` via Shortcut):** As detailed elsewhere, this method is **only suitable for limited testing or development, NOT for enterprise deployment**. It requires specific shortcuts, doesn't persist across normal browser use, and can be blocked by common enterprise policies (`ExtensionInstallBlocklist` = `*`). It should not be considered a viable alternative to Web Store deployment for enterprise use.
+
+**Recommendation:** Focus on resolving any Web Store submission issues, as it provides the most robust and manageable deployment path for enterprise environments.
 
 ## Helpful Links
 

@@ -54,12 +54,13 @@ The POC is implemented in a PowerShell script (`GenesysEnvDifferentiation.ps1`) 
 ### Browser Extension Approach
 - Creates a simple browser extension
 - Adds a prominent red banner to the DR environment
+- **Note:** This POC loads the extension locally. For a production or enterprise deployment, the extension must be published to the **Chrome Web Store** (can be 'Unlisted') and deployed via enterprise policies.
 
 ## Notes
 
 - For a production implementation, you would need to create proper icon files rather than using system DLLs
 - The Edge workspace approach requires Edge 88 or later
-- The browser extension needs to be loaded manually in developer mode
+- The browser extension needs to be loaded manually in developer mode **(for POC testing only - see note above regarding production deployment)**
 
 ## File Structure
 

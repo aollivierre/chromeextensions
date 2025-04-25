@@ -24,6 +24,8 @@ We deploy our extension policies via SCCM using the Chrome enterprise policies. 
 
 > **Important**: As per [Chrome's documentation](https://developer.chrome.com/docs/extensions/how-to/distribute/install-extensions), all extensions for Windows and macOS must come from the Chrome Web Store. Local CRX installations are not supported on these platforms.
 
+> **Clarification**: Enterprise policies like `ExtensionInstallAllowlist` and `ExtensionInstallForcelist` **require** the extension's ID from the Chrome Web Store. These policies do **not** support deploying extensions using local file paths, local `.crx` files, or methods like `--load-extension`. Such methods are suitable only for local development or testing, not for enterprise policy deployment.
+
 ## Current Approved Extensions
 
 Below is our current list of approved extensions. These extensions have been reviewed for security, functionality, and business need.

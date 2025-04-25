@@ -12,7 +12,7 @@
                 'background-color: #ff0000; color: white; text-align: center; ' +
                 'padding: 4px; font-size: 12px; font-weight: bold; z-index: 9999999; ' +
                 'box-shadow: 0 0 5px rgba(255,0,0,0.5);';
-            topBanner.innerText = 'DR ENVIRONMENT';
+            topBanner.innerText = 'DR ORGANIZATION';
             document.body.appendChild(topBanner);
             console.log('DR Environment Extension: Top banner added');
         }

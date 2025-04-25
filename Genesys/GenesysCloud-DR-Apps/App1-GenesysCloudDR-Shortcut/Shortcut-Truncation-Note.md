@@ -31,4 +31,6 @@ If you need to verify the actual command line being passed:
 
 ## Conclusion
 
-All the shortcut creation methods in this application work correctly despite the misleading truncated display in the properties window. The scripts ensure that all parameters, including `--no-first-run` and the full extension path, are correctly included when Chrome is launched. 
+All the shortcut creation methods in this application work correctly despite the misleading truncated display in the properties window. The scripts ensure that all parameters, including `--no-first-run` and the full extension path, are correctly included when Chrome is launched.
+
+**Note on `--load-extension`:** Remember that using the `--load-extension` parameter only activates the extension for the specific Chrome instance launched by this shortcut. The extension will not be active in other Chrome windows opened normally, and this method may fail entirely if enterprise policies block all extensions (`ExtensionInstallBlocklist` = `*`). For persistent, enterprise-wide deployment, publishing the extension to the Chrome Web Store and deploying via policy is required. 

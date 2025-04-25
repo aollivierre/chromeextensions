@@ -1,176 +1,90 @@
-# Genesys Cloud DR Chrome Extension Installation
+# Genesys Cloud DR Chrome Extension - Development & Deployment Guide
 
-This package contains scripts for installing the Genesys Cloud DR Chrome extension in corporate environments where standard extension installations may be restricted.
+**CRITICAL NOTE ON DEPLOYMENT METHODS:**
+
+*   **Enterprise Deployment (SCCM, Intune, etc. on Windows/macOS):** The **ONLY** supported and reliable method is to publish the extension (e.g., as 'Unlisted') to the **Chrome Web Store** and deploy it using enterprise policies (`ExtensionInstallForcelist`) referencing the extension's **Web Store ID**. Deploying via policies pointing to local `.crx` files or file paths **DOES NOT WORK** reliably or is unsupported on Windows/macOS.
+*   **Local Development/Testing ONLY:** Use `chrome://extensions` -> "Load unpacked" or use the `--load-extension="C:\path\to\unpacked\source"` command-line parameter when launching Chrome. The `--load-extension` method only works for the specific Chrome instance launched with it and may be blocked by enterprise policies (`ExtensionInstallBlocklist` = `*`).
+*   **Local `.crx` Files:** There is no valid use case for *installing* local `.crx` files on Windows/macOS, either manually or via policy, for development or deployment. Packaging is only done to create the ZIP file for uploading to the Web Store.
+
+This package contains scripts primarily intended to assist with **local development setup** or reflect **obsolete/non-functional** approaches.
 
 ## Available Scripts
 
-### 1. Enable-LocalExtensions.ps1
+### 1. Enable-LocalExtensions.ps1 (Development/Testing Environment Setup ONLY)
 
-**Purpose:** Enables loading of unpacked extensions with the `--load-extension` parameter.
+*   **Purpose:** Assists developers in configuring their **local machine** to allow loading of **unpacked** extensions using `--load-extension` or the "Load unpacked" button, potentially bypassing local policy blocks *for testing only*. **DO NOT use for enterprise deployment.**
+*   **What it does (on local machine):** Attempts to remove blocking policies (like wildcard blocklist), set developer mode policies, create local directories, potentially create test shortcuts using `--load-extension`.
+*   **When to use:** Strictly for **local development and testing** of unpacked extension source code.
+*   **Usage:** `.\Enable-LocalExtensions.ps1 -ExtensionPath "C:\path\to\extension\source"`
 
-**What it does:**
-- Removes blocking policies, especially the wildcard (*) blocklist entry
-- Sets necessary developer mode policies
-- Creates extension directory
-- Creates a desktop shortcut that loads Chrome with the extension
+### 2. Install-CRX-NoBlocking.ps1 (Obsolete / Non-Functional for Enterprise Deployment)
 
-**When to use:**
-- For development and testing
-- When you need to modify the extension code
-- When working with unpacked extension (source files)
+*   **Purpose:** **(Obsolete Concept)** This script attempted to install a packaged `.crx` extension file using Chrome policies pointing to local paths.
+*   **Status:** This method is **NOT supported or reliable** for enterprise deployment on Windows/macOS. Chrome policies (`ExtensionInstallForcelist`, `ExtensionInstallAllowlist`) require a **Web Store ID**, not a local path.
+*   **Recommendation:** **DO NOT USE** this script for deployment. Use the Chrome Web Store method.
 
-**Usage:**
-```powershell
-.\Enable-LocalExtensions.ps1 -ExtensionPath "C:\path\to\extension"
-```
+### 3. Clean-ChromePolicies.ps1 (Obsolete / Use with Caution)
 
-### 2. Install-CRX-NoBlocking.ps1
+*   **Purpose:** **(Obsolete Context / Caution Advised)** This script attempted to clean up local Chrome policy registry entries, potentially related to failed local CRX installation attempts.
+*   **Status:** Modifying policies directly can have unintended consequences. Use `chrome://policy` to review effective policies. If needed, manage enterprise policies via standard tools (GPO, Intune, SCCM Configuration Items), not local scripts for deployment.
+*   **Recommendation:** Generally **avoid** unless troubleshooting specific local policy corruption under guidance.
 
-**Purpose:** Installs a packaged .crx extension file via Chrome policies.
+## Preference Order / Recommended Approach
 
-**What it does:**
-- Removes blocking policies
-- Adds extension to the allowlist
-- Adds extension to the force-install list
-- Disables BlockExternalExtensions policy
-
-**When to use:**
-- For wider deployment of the extension via corporate policy
-- When using a pre-packaged .crx file
-
-**Usage:**
-```powershell
-.\Install-CRX-NoBlocking.ps1
-```
-
-### 3. Clean-ChromePolicies.ps1
-
-**Purpose:** Cleans up Chrome policies, especially for fixing invalid allowlist entries.
-
-**What it does:**
-- Fixes invalid entries in the allowlist
-- Removes wildcard blocking from the blocklist (when used with -Force)
-
-**When to use:**
-- When you need to repair broken Chrome policies
-- When having issues with extension blocking
-
-**Usage:**
-```powershell
-.\Clean-ChromePolicies.ps1 -Force
-```
-
-## Important Notes
-
-1. **Extension ID Stability:** The extension ID (`idjmoolmcplbkjcldambblbojejkdpij`) is derived from the extension's public key. Always use the same .pem key file when packaging to maintain this ID.
-
-2. **Corporate Policies:** These scripts temporarily modify Chrome policies to enable extension loading. Use with permission from your IT department.
-
-3. **Preference Order:**
-   - For development: Use `Enable-LocalExtensions.ps1` with unpacked extension
-   - For deployment: Use `Install-CRX-NoBlocking.ps1` with packaged .crx file
-
-4. **Policy Updates:** Run `gpupdate /force` and restart Chrome after applying changes.
-
-## Troubleshooting
-
-If extensions are still blocked:
-
-1. Visit `chrome://policy` in Chrome to see all active policies
-2. Check if wildcard (*) exists in the blocklist
-3. Ensure your extension ID is in both the allowlist and forcelist
-4. Verify that `BlockExternalExtensions` is set to 0
-5. Make sure the CRX file path in the forcelist is correct
-
-If automatic installation via forcelist fails, you can also try manually dragging the CRX file into Chrome.
+1.  **Enterprise Deployment:**
+    *   Package extension source into a **ZIP** file.
+    *   Upload ZIP to **Chrome Web Store** (publish as 'Unlisted' or 'Public').
+    *   Obtain the **Extension ID** from the Web Store.
+    *   Deploy using **`ExtensionInstallForcelist`** policy (via GPO, SCCM, Intune) with the Web Store ID and update URL (`https://clients2.google.com/service/update2/crx`).
+2.  **Local Development/Testing:**
+    *   Use `chrome://extensions` -> "Load unpacked" pointing to your source code directory.
+    *   Alternatively, create a temporary shortcut using `--load-extension="C:\path\to\source"` (useful for testing app mode, but remember its limitations). The `Enable-LocalExtensions.ps1` script might assist in setting up the local environment for this.
 
 ## Files
 
-- `Install-GenesysCloudDRExtension.ps1`: PowerShell script that installs the Chrome extension via Chrome policies
-- `Detect-GenesysCloudDRExtension.ps1`: PowerShell script that detects if the extension is installed
-- `Uninstall-GenesysCloudDRExtension.ps1`: PowerShell script that removes the extension and related policies
-- `GenesysCloudDR.crx`: Packaged Chrome extension file (add this after packaging)
-- `Extension/`: Directory containing the Chrome extension source files:
-  - `manifest.json`: Extension manifest file defining permissions and content scripts
-  - `dr-style.css`: CSS styling for visual differentiation
-  - `dr-script.js`: JavaScript for adding the visual indicator
+*   `Enable-LocalExtensions.ps1`: PowerShell script for **local development environment setup ONLY**.
+*   `Install-CRX-NoBlocking.ps1`: **Obsolete** script - DO NOT USE for deployment.
+*   `Clean-ChromePolicies.ps1`: **Obsolete** / Use with caution.
+*   `Detect-GenesysCloudDRExtension.ps1`, `Uninstall-GenesysCloudDRExtension.ps1`: These likely relate to the obsolete local CRX/file copy method and are **not relevant** for the standard Web Store deployment.
+*   `GenesysCloudDR.crx`: **Obsolete artifact** for deployment. Packaging is done into a ZIP for Web Store upload.
+*   `Extension/`: Directory containing the Chrome extension **source files** (`manifest.json`, `.css`, `.js`). This is what you ZIP for the Web Store or load unpacked locally.
 
-## SCCM Configuration
+## SCCM Configuration (Recommended: Policy-Based)
 
-- **Installation Program**: `powershell.exe -ExecutionPolicy Bypass -File Install-GenesysCloudDRExtension.ps1`
-- **Uninstallation Program**: `powershell.exe -ExecutionPolicy Bypass -File Uninstall-GenesysCloudDRExtension.ps1`
-- **Detection Method**: Use a script with `powershell.exe -ExecutionPolicy Bypass -File Detect-GenesysCloudDRExtension.ps1`
-- **Dependencies**: None
-- **User Experience**: Install for system
-- **Target**: System-targeted application
+Deployment via SCCM should **not** involve running the scripts in this package (except perhaps for complex initial environment setup not related to the extension itself). Instead, configure SCCM to apply the necessary Chrome Policies via the registry:
 
-## Extension Details
+1.  **Create Configuration Item/Baseline:**
+    *   Target the registry key: `HKLM\Software\Policies\Google\Chrome\ExtensionInstallForcelist`
+    *   Add a registry value:
+        *   Name: The **Web Store Extension ID**
+        *   Type: `REG_SZ`
+        *   Value: `https://clients2.google.com/service/update2/crx`
+    *   Ensure compliance remediation is enabled.
+2.  **Deploy Baseline:** Deploy to the target collection.
 
-The Chrome extension adds a red banner at the top of the Genesys Cloud DR environment with the text "DR ENVIRONMENT" to visually differentiate it from the production environment. The extension automatically activates when users visit Genesys Cloud DR URLs.
+*(Optionally configure `ExtensionInstallAllowlist` or `ExtensionInstallBlocklist` as needed, ensuring the DR extension ID is allowed if a blocklist is used).*
 
-## Installation Details
+## How It Works (Correct Method: Web Store Deployment)
 
-The extension is deployed using these components:
+1.  Chrome browser on the client machine periodically checks configured `ExtensionInstallForcelist` policies.
+2.  It contacts the update URL (`clients2.google.com/service/update2/crx`) specified in the policy value, requesting the extension with the given Web Store ID.
+3.  The Chrome Web Store provides the latest version of the extension.
+4.  Chrome downloads and installs/updates the extension automatically.
+5.  The extension is active across all user profiles and browser instances, managed centrally.
+6.  No local files (CRX or source) need to be deployed to client machines for this process.
 
-1. **Extension Files**: Copied to `C:\Program Files\GenesysPOC\ChromeExtension\`
-2. **CRX Package**: Stored at `C:\Program Files\GenesysPOC\GenesysCloudDR.crx`
-3. **Chrome Policies**:
-   - Extension added to allowlist
-   - Extension added to force-install list
-   - Developer mode enabled
-4. **Desktop Shortcuts**: Created for both Production and DR environments
+## Important: Extension ID Stability (for Web Store Updates)
 
-## How It Works
+The extension ID is assigned by the Chrome Web Store upon initial upload. It remains stable as long as you upload updates to the *same* extension item in the developer dashboard.
 
-This installation approach uses Chrome's policy-based deployment mechanism to install and activate the extension automatically. Once installed:
+*   The `.pem` key generated when you first packaged your extension (or the first time you uploaded) is **critical for signing subsequent updates** you upload to the Web Store. Losing this key means you cannot update your existing extension and would have to publish a new one with a new ID, requiring policy updates.
+*   **Store the original `.pem` key securely.**
 
-1. The extension is automatically loaded when Chrome starts
-2. No special command-line parameters are needed in shortcuts
-3. Users see visual differentiation when visiting DR environment URLs
+## Packaging the Extension (for Web Store Upload ONLY)
 
-## Important: Extension ID Stability
+You need to package your extension source files (`manifest.json`, `.css`, icons, etc.) into a **ZIP file** to upload it to the Chrome Web Store developer console.
 
-The extension ID (`idjmoolmcplbkjcldambblbojejkdpij`) is derived from the private key (.pem file) used when packaging the extension, not from the extension content. 
+*   **Manual Method:** Select all files and subdirectories within your `Extension/` source folder and create a standard ZIP archive.
+*   **Programmatic Method:** Use build tools or scripts (`7z`, `zip`, etc.) to create the ZIP archive from your source directory as part of your build process.
 
-**Critical considerations:**
-- **ALWAYS use the same .pem file** when creating updates to maintain the same extension ID
-- Store the .pem file securely but ensure it remains accessible for future updates
-- If the .pem file is lost, a new ID will be generated, requiring policy updates across your environment
-- The scripts assume this specific extension ID - changing it requires updating all scripts
-
-## Packaging the Extension
-
-### Manual Method
-
-Before deploying via SCCM, you need to package the extension as a CRX file:
-1. Open Chrome and go to `chrome://extensions/`
-2. Enable "Developer mode"
-3. Click "Pack extension" and select the Extension folder
-4. If this is your first time packaging, leave the private key field empty
-5. If updating an existing extension, browse to the previously generated .pem file
-6. Click "Pack Extension" and Chrome will generate the .crx file
-7. **Important:** Save both the .crx and .pem files securely
-8. Add the .crx file to this package for deployment
-
-### Programmatic Packaging
-
-For automated builds, there are several methods to package extensions programmatically:
-
-1. **Chrome Command Line** (requires Chrome installation):
-   ```powershell
-   # Using Chrome's command line tool
-   & 'C:\Program Files\Google\Chrome\Application\chrome.exe' --pack-extension="C:\path\to\extension" --pack-extension-key="C:\path\to\extension.pem"
-   ```
-
-2. **Node.js Tools** (for build servers):
-   - Install Node.js and use the [crx](https://www.npmjs.com/package/crx) package:
-   ```
-   npm install -g crx
-   crx pack ./extension -o extension.crx -p extension.pem
-   ```
-
-3. **PowerShell Module** (creates unsigned CRX):
-   - Several GitHub projects provide PowerShell modules for CRX packaging
-   - Use these in build pipelines for automated packaging
-
-Whichever method you choose, always use the same .pem file to maintain extension ID consistency. 
+**Note:** While Chrome *can* pack extensions into `.crx` files locally (`chrome://extensions` -> Pack Extension, or command-line), this `.crx` file is **NOT used for uploading to the Web Store** (which takes a ZIP) and **NOT suitable for policy-based deployment** on Windows/macOS. 

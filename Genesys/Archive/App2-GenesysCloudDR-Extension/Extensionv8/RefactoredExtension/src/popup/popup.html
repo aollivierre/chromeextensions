@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Genesys Cloud Environment</title>
+    <style>
+        body {
+            width: 300px;
+            font-family: Arial, sans-serif;
+            padding: 10px;
+            margin: 0;
+        }
+        
+        h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .badge {
+            text-align: center;
+            padding: 8px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .dr {
+            background-color: #ff3b30;
+            color: white;
+        }
+        
+        .test {
+            background-color: #ff9500;
+            color: black;
+        }
+        
+        .dev {
+            background-color: #007aff;
+            color: white;
+        }
+        
+        .unknown {
+            background-color: #808080;
+            color: white;
+        }
+        
+        .info-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            width: 40%;
+        }
+        
+        .info-value {
+            width: 60%;
+            word-break: break-all;
+        }
+        
+        button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #3367d6;
+        }
+    </style>
+</head>
+<body>
+    <h2>Genesys Cloud Environment</h2>
+    
+    <div id="environment-badge" class="badge unknown">Unknown</div>
+    
+    <div class="info-row">
+        <div class="info-label">Organization ID:</div>
+        <div id="org-id" class="info-value">Not detected</div>
+    </div>
+    
+    <div class="info-row">
+        <div class="info-label">Detection Method:</div>
+        <div id="detection-method" class="info-value">Not detected</div>
+    </div>
+    
+    <div class="info-row">
+        <div class="info-label">Detection Source:</div>
+        <div id="detection-source" class="info-value">Not detected</div>
+    </div>
+    
+    <div class="info-row">
+        <div class="info-label">Last Updated:</div>
+        <div id="last-updated" class="info-value">Never</div>
+    </div>
+    
+    <button id="refresh-button">Refresh Detection</button>
+    
+    <script src="popup.js"></script>
+</body>
+</html>

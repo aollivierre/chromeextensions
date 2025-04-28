@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Genesys Cloud Org ID Detector",
+  "version": "1.0",
+  "description": "Detects specific Genesys Cloud Organization ID on Genesys Cloud domains",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "webRequest",
+    "scripting",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "*://*.pure.cloud/*",
+    "*://*.mypurecloud.com/*",
+    "*://*.genesys.cloud/*"
+  ]
+} 

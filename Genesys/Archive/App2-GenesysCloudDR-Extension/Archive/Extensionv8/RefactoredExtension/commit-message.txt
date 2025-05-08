@@ -1,0 +1,22 @@
+fix(navigation): resolve bookmark navigation environment detection issue
+
+Fix issue where badge shows incorrect environment when navigating between 
+environments using bookmarks. Specifically addresses the case where navigating 
+from TEST to DR via bookmark would continue showing TEST badge.
+
+Key changes:
+- Add explicit detection for bookmark navigation in tab-monitor.js
+- Implement tab-specific environment cache clearing for bookmark navigation
+- Enhance URL detection to prioritize strong DR patterns
+- Modify environment update logic to prioritize DR environment detection
+- Add immediate badge updates for strong DR patterns
+- Implement multiple verification points for correct badge display
+
+Additional changes:
+- Remove unused activeTab permission to address Chrome Web Store rejection
+- Update manifest version to 2.5
+- Create detailed flow diagram to document extension architecture
+
+This update ensures the badge always shows the correct environment regardless
+of navigation method used, improving reliability for users working across
+multiple Genesys Cloud environments.

@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Genesys Cloud Environment Badge",
+  "version": "1.0",
+  "description": "Displays a badge indicating the current Genesys Cloud environment",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://*.mypurecloud.com/*",
+    "https://*.pure.cloud/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.mypurecloud.com/*",
+        "https://*.pure.cloud/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+} 

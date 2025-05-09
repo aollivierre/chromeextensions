@@ -43,14 +43,14 @@ Based on your rejection notice, here are the likely policy violations and how to
 **Solution**: Use this template for your description:
 
 ```
-This extension helps users easily identify Genesys Cloud disaster recovery (DR) environments by displaying a color-coded visual badge at the top of the interface. It shows different colored badges for different environments:
+This extension helps users easily identify Genesys Cloud disaster recovery (DR), test (TEST), and development (DEV) environments by displaying a color-coded visual badge at the top of the interface. It shows different colored badges for different environments:
 
 - Red badge for DR environments
 - Orange badge for TEST environments
 - Blue badge for DEV environments
 - No badge for PROD environments
 
-The extension reads only the organization name displayed in the Genesys Cloud interface to determine the environment. All processing is done locally within your browser, and no data is transmitted externally.
+The extension reads the organization name displayed in the Genesys Cloud interface, or alternatively, an organization ID from local browser storage (as a fallback), to determine the environment. All processing is done locally within your browser, and no data is transmitted externally.
 
 This is an internal tool developed for specific organizations and is not affiliated with, endorsed by, or officially connected to Genesys Cloud.
 ```

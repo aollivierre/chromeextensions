@@ -22,14 +22,14 @@ Log in to the [Chrome Developer Dashboard](https://chrome.google.com/webstore/de
 Replace your current description with this template:
 
 ```
-This extension helps users easily identify Genesys Cloud disaster recovery (DR) environments by displaying a color-coded visual badge at the top of the interface:
+This extension helps users easily identify Genesys Cloud disaster recovery (DR), test (TEST), and development (DEV) environments by displaying a color-coded visual badge at the top of the interface:
 
 • Red badge for DR environments
 • Orange badge for TEST environments
 • Blue badge for DEV environments
 • No badge for PROD environments
 
-The extension reads only the organization name displayed in the Genesys Cloud interface to determine the environment type. All processing is done locally within your browser, and no data is transmitted externally.
+The extension reads the organization name displayed in the Genesys Cloud interface, or alternatively, an organization ID from local browser storage (as a fallback), to determine the environment type. All processing is done locally within your browser, and no data is transmitted externally.
 
 This is an internal tool developed for specific organizations and is not affiliated with, endorsed by, or officially connected to Genesys Cloud.
 ```
@@ -53,7 +53,7 @@ Keep your extension as "Unlisted" if it's intended for internal use only.
 In the permissions justification section (appears when you've selected permissions your extension uses), explain:
 
 ```
-This extension needs access to these domains because it identifies Genesys Cloud environments by reading the organization name from the DOM and displaying a visual badge. It only accesses these specific domains where Genesys Cloud services run.
+This extension requires access to `*://*.mypurecloud.com/*` and `*://*.pure.cloud/*` to read the organization name from the page content and display a visual environment badge. The 'storage' permission is used to access an organization ID from local browser storage as a fallback identification method if the primary DOM-based method fails. This enhances the reliability of the badge display. All data is processed locally and is not transmitted externally.
 ```
 
 ## Step 3: Single Purpose Justification

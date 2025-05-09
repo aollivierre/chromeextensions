@@ -16,6 +16,13 @@ This extension uses content scripts that run on Genesys Cloud domains:
 1. The extension needs to access the DOM of Genesys Cloud pages to read the organization name
 2. The extension needs to insert the visual badge element into these pages
 3. Access is limited to only Genesys Cloud domains where the extension's functionality is relevant
+- Request network access
+- Request background privileges
+- Collect any user data beyond what's visible in the page DOM or accessed from a specific local storage key for fallback identification.
+
+### Storage Permission (`storage`)
+
+**Justification**: This permission is required to access a pre-existing authentication token from the browser's local storage. The extension reads this token solely to extract an organization ID as a fallback mechanism when the primary method of identifying the organization from the page's DOM fails. This enhances the reliability of displaying the correct environment badge. All data accessed from local storage is processed locally within the browser and is not transmitted externally. The extension does not write new data to local storage for its own tracking or operational purposes.
 
 ### No Additional Permissions
 
@@ -44,9 +51,9 @@ The extension's single purpose is clearly articulated and directly related to it
 ### 3. User Data Protection
 
 The extension:
-- Does not collect personal information
+- Does not collect personal information beyond what is needed for environment identification.
 - Does not transmit any data outside the browser
-- Only processes organization names that are already visible on the page
-- Does not store persistent data
+- Processes organization names that are visible on the page or an organization ID found within a pre-existing local storage item.
+- Does not store new persistent data for its own tracking.
 
 This single purpose statement and permissions justification demonstrate that the extension complies with Chrome Web Store policies by having a clear, focused purpose with appropriate, minimal permissions needed to fulfill that purpose. 

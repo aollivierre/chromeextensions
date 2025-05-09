@@ -12,11 +12,11 @@ Good news! You can publish your extension as **unlisted**, which is perfect for 
 ## Required Information for Submission
 
 ### Basic Details
-- **Extension Name**: "Genesys DR Environment Indicator" (already in your manifest)
+- **Extension Name**: "Genesys Cloud Environment Badge" (matches manifest.json)
 - **Summary**: A brief one-sentence description (max 132 characters)
-  - Example: "Adds prominent visual indicators to Genesys Cloud DR environments for easy identification"
-- **Description**: Detailed explanation (max 16,000 characters)
-  - Example: "This extension adds visual cues to Genesys DR environments, helping users easily identify when they're working in a disaster recovery instance. Clear visual indicators prevent confusion and potential mistakes when switching between production and DR environments."
+  - Example: "Displays visual badges in Genesys Cloud to identify DR, Test, and Dev environments."
+- **Description**: Detailed explanation (max 16,000 characters). Use the description from your manifest or an expanded version. Example based on manifest:
+  - "Displays environment badges for Genesys Cloud based on organization name (read from the page) and organization ID (read from local storage as a fallback). This helps users easily distinguish between Production, DR, Test, and Development environments with color-coded visual cues. All processing is done locally."
 - **Primary Category**: Choose "Developer Tools" or "Productivity"
 - **Language**: English (default)
 
@@ -43,18 +43,18 @@ Good news! You can publish your extension as **unlisted**, which is perfect for 
 ### Privacy Requirements
 - **Privacy Policy**: Required even for unlisted extensions
   - Create a simple document stating:
-    - What data your extension collects (appears minimal - only page content for visual modifications)
-    - That data isn't transmitted anywhere
+    - What data your extension accesses (page content for organization name, and a specific item in local storage for organization ID as a fallback)
+    - That data isn't transmitted anywhere and is processed locally
     - Contact information (your work email)
   - Host this document on any accessible URL (company intranet page, GitHub, etc.)
   - Enter the URL in the submission form
 
 ### Attestations
 - **Single Purpose**: Describe the single purpose of your extension
-  - Example: "This extension's sole purpose is to provide visual identification of DR environments in Genesys Cloud"
+  - Example: "This extension's sole purpose is to provide visual identification of different Genesys Cloud environments (DR, Test, Dev, Prod) by displaying badges based on organization name or ID."
 - **Permissions Justification**: Explain why you need the permissions in your manifest
-  - `activeTab`: "Required to modify the appearance of Genesys Cloud pages"
-  - Host permissions: "Required to identify and modify only Genesys Cloud pages"
+  - Content Script Access (`*://*.mypurecloud.com/*`, `*://*.pure.cloud/*`): "Required to read the organization name from the page content and to inject the visual badge onto Genesys Cloud pages."
+  - Storage (`storage`): "Required to access an organization ID from local browser storage. This is used as a fallback mechanism if the primary DOM-based identification of the organization fails, ensuring more reliable badge display. All data accessed is processed locally and is not transmitted externally."
 
 ## Publishing Process
 

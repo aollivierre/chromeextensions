@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Genesys Cloud Environment Badge",
+  "version": "4.0",
+  "description": "Displays environment badges for Genesys Cloud based on organization name and ID",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.mypurecloud.com/*",
+        "*://*.pure.cloud/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+} 

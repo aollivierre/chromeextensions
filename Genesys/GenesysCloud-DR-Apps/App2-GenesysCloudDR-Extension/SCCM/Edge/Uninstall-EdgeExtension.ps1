@@ -1,4 +1,4 @@
-﻿$ExtensionID = "bekjclbbemboommhkppfcdpeaddfajnm"
+﻿$ExtensionID = "pkggbpdkbnahidijamikngnlpfgepabn"
 
 $(Get-Item HKLM:\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallForcelist).GetValueNames() | Where-Object {$_ -ne ""} | ForEach-Object {
     if ($(Get-ItemPropertyValue -Path HKLM:\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallForcelist -Name $_).Trim() -like "$($ExtensionID);*") {

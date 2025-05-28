@@ -1,0 +1,926 @@
+﻿diff --git a/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/CreateDRShortcut.vbs b/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/Archive/CreateDRShortcut.vbs
+similarity index 100%
+rename from Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/CreateDRShortcut.vbs
+rename to Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/Archive/CreateDRShortcut.vbs
+diff --git a/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/DetectDRShortcut.vbs b/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/Archive/DetectDRShortcut.vbs
+similarity index 100%
+rename from Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/DetectDRShortcut.vbs
+rename to Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/Archive/DetectDRShortcut.vbs
+diff --git a/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/Archive/DetectDRShortcut_Improved.vbs b/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/Archive/DetectDRShortcut_Improved.vbs
+new file mode 100644
+index 0000000..c9a2233
+--- /dev/null
++++ b/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/Archive/DetectDRShortcut_Improved.vbs
+@@ -0,0 +1,53 @@
++option explicit
++
++' Hardcoded values to avoid command-line parameter issues
++Dim Title, Icon, Targets, ArgumentPattern
++Title = "Genesys Cloud DR"
++Icon = "GenesysCloud_DR_256.ico"
++Targets = Array("C:\Program Files\Google\Chrome\Application\chrome.exe", "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe")
++ArgumentPattern = "--app=https://login.mypurecloud.com/#/authenticate-adv/org/wawanesa-dr"
++
++' Objects
++Dim Shell, FileSystem, DesktopPath, IconPath, Shortcut
++
++Set Shell = CreateObject("WScript.Shell")
++Set FileSystem = CreateObject("Scripting.FileSystemObject")
++DesktopPath = Shell.SpecialFolders("Desktop")
++IconPath = Shell.ExpandEnvironmentStrings("%USERPROFILE%") & "\AppData\Local\Microsoft\Windows"
++
++' Check if shortcut exists first
++If Not FileSystem.FileExists(DesktopPath & "\" & Title & ".lnk") Then
++    WScript.Quit 0
++End If
++
++Set Shortcut = Shell.CreateShortcut(DesktopPath & "\" & Title & ".lnk")
++
++Dim TargetMatch, ArgumentMatch, IconMatch
++TargetMatch = False
++ArgumentMatch = False
++IconMatch = False
++
++' Check if target matches one of our expected paths
++Dim i
++For i = 0 to UBound(Targets)
++    If StrComp(Targets(i), Shortcut.TargetPath, 1) = 0 Then
++        TargetMatch = True
++        Exit For
++    End If
++Next
++
++' Check if arguments contain the expected pattern
++If InStr(1, Shortcut.Arguments, ArgumentPattern, 1) > 0 Then
++    ArgumentMatch = True
++End If
++
++' Check if the icon file exists (critical for OneDrive sync issue)
++If FileSystem.FileExists(IconPath & "\" & Icon) Then
++    IconMatch = True
++End If
++
++' Output "DETECTED" only if target, arguments, AND icon all match
++' This prevents false positives from OneDrive-synced shortcuts without icons
++If TargetMatch = True AND ArgumentMatch = True AND IconMatch = True Then
++    WScript.Echo "DETECTED"
++End If 
+\ No newline at end of file
+diff --git a/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/CHANGELOG.md b/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/CHANGELOG.md
+new file mode 100644
+index 0000000..08ce856
+--- /dev/null
++++ b/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/CHANGELOG.md
+@@ -0,0 +1,130 @@
++# Changelog
++
++All notable changes to the Genesys Cloud DR Shortcut project will be documented in this file.
++
++The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
++and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
++
++## [2.1.0] - 2024-12-19
++
++### Changed
++- **Chrome Profile Strategy**: Removed `--user-data-dir` parameter to use default Chrome profile instead of dedicated profile
++- **SSO Compatibility**: Now leverages existing Microsoft Entra SSO tokens for seamless authentication
++- **Extension Support**: All Chrome extensions now work immediately without caching issues
++
++### Removed
++- **Dedicated Profile Logic**: Removed temp folder creation (`C:\Temp\GenesysPOC\ChromeUserData`)
++- **Profile Isolation**: Eliminated separate Chrome profile to prevent SSO and extension compatibility issues
++
++### Fixed
++- **Extension Caching Issues**: Resolved problem where old extension versions would get stuck in dedicated profile
++- **SSO Re-authentication**: Eliminated need for users to re-authenticate when using SSO-based systems
++- **Maintenance Overhead**: Removed need to periodically clean temp folders
++
++### Benefits
++- Γ£à **Seamless Microsoft Entra SSO**: Authentication tokens from default profile work immediately
++- Γ£à **Current Extensions**: Visual indicator extensions and other Chrome extensions work without version conflicts
++- Γ£à **Better UX**: One-click access without additional authentication prompts
++- Γ£à **Simplified Maintenance**: No temp folder cleanup or profile management needed
++
++## [2.0.0] - 2024-12-19
++
++### Added
++- **Critical OneDrive Sync Protection**: Detection now validates icon file existence to prevent false positives when OneDrive syncs shortcuts without icons
++- **Chrome Installation Validation**: Creation script automatically detects and handles both x64 and x86 Chrome installations
++- **Comprehensive Error Handling**: Added specific exit codes (0-10) for different failure scenarios in creation script
++- **Path Resolution Enhancement**: Scripts now use script directory instead of current working directory for icon file location
++- **5-Point Validation System**: Enhanced detection with target validation, argument matching, icon validation, icon location verification, and Chrome existence checks
++- **Corruption Protection**: Detection script gracefully handles corrupted shortcut files
++- **Directory Safety**: Creation script ensures all required directories exist before operations
++
++### Changed
++- **BREAKING**: Detection method now requires icon file validation - older shortcuts without proper icon installation will not be detected
++- **Script Naming**: Renamed to `CreateDRShortcut_Enhanced.vbs` and `DetectDRShortcut_Enhanced.vbs` to reflect comprehensive improvements
++- **Detection Logic**: Now uses silent exit instead of exit codes for SCCM compatibility
++- **Icon Location**: Changed from relative to absolute path resolution using `WScript.ScriptFullName`
++
++### Fixed
++- **OneDrive Sync False Positives**: Prevents SCCM from skipping installation when OneDrive-synced shortcuts exist without proper setup
++- **Icon Path Resolution**: Fixed script failing with exit code 2 when run from different working directories
++- **Chrome Path Detection**: Added fallback logic for different Chrome installation paths
++- **Silent Execution**: Ensured proper background mode execution with `//B` flag compatibility
++
++### Security
++- **Enhanced Validation**: Multiple checkpoints prevent execution with invalid or incomplete installations
++- **File Existence Verification**: All file operations now include existence checks before proceeding
++
++## [1.0.0] - 2024-12-18
++
++### Added
++- Initial release with basic shortcut creation and detection functionality
++- `CreateDRShortcut.vbs`: Basic shortcut creation with hardcoded paths
++- `DetectDRShortcut.vbs`: Basic detection using shortcut properties
++- `DeleteDRShortcut.vbs`: Shortcut removal functionality
++- `GenesysCloud_DR_256.ico`: Custom icon for visual differentiation
++- Support for Chrome application mode with DR environment URL
++- SCCM deployment configuration documentation
++
++### Features
++- Desktop shortcut creation pointing to Genesys Cloud DR environment
++- Custom icon integration for visual identification
++- Silent installation support with Windows Script Host
++- Basic detection for SCCM application deployment
++- User-targeted deployment compatibility
++
++---
++
++## Version Comparison
++
++### v2.1.0 vs v2.0.0 vs v1.0.0
++
++| Feature | v1.0.0 | v2.0.0 | v2.1.0 |
++|---------|--------|--------|--------|
++| OneDrive Sync Protection | Γ¥î None | Γ£à Icon validation prevents false positives | Γ£à Icon validation prevents false positives |
++| Chrome Detection | Γ¥î Single path only | Γ£à Multi-path detection with fallback | Γ£à Multi-path detection with fallback |
++| Error Handling | Γ¥î Basic | Γ£à Comprehensive with specific exit codes | Γ£à Comprehensive with specific exit codes |
++| Path Resolution | Γ¥î Working directory dependent | Γ£à Script directory based | Γ£à Script directory based |
++| Validation Points | Γ¥î 2-point basic | Γ£à 5-point comprehensive | Γ£à 5-point comprehensive |
++| Corruption Handling | Γ¥î None | Γ£à Graceful error handling | Γ£à Graceful error handling |
++| Directory Safety | Γ¥î Assumes directories exist | Γ£à Creates directories with error handling | Γ£à Creates directories with error handling |
++| Chrome Profile | Γ¥î Default profile (basic) | Γ¥î Dedicated profile (isolation) | Γ£à Default profile (SSO optimized) |
++| SSO Compatibility | Γ¥î Basic | Γ¥î Requires re-authentication | Γ£à Seamless Microsoft Entra SSO |
++| Extension Support | Γ¥î Basic | Γ¥î Caching issues possible | Γ£à Full compatibility, no caching issues |
++
++## Migration Notes
++
++### From v2.0.0 to v2.1.0
++
++**SCCM Configuration Changes:**
++- Γ£à **No SCCM changes required**: Same scripts, only internal Chrome arguments changed
++- Γ£à **Automatic Benefits**: Existing deployments will benefit from improved SSO and extension compatibility
++- Γ£à **Backwards Compatible**: v2.1.0 scripts work with shortcuts created by v2.0.0
++
++**User Experience Improvements:**
++- **SSO**: Users will no longer need to re-authenticate when clicking the DR shortcut
++- **Extensions**: All Chrome extensions (including visual indicators) will work immediately
++- **Performance**: Faster startup due to no temp profile initialization
++
++**Recommended Actions:**
++1. Update SCCM application with v2.1.0 scripts
++2. Test SSO functionality in pilot environment
++3. Verify extension compatibility works as expected
++4. Clean up any existing temp folders (optional): `C:\Temp\GenesysPOC\ChromeUserData`
++
++### From v1.0.0 to v2.0.0
++
++**SCCM Configuration Changes Required:**
++- Update installation command to use `CreateDRShortcut_Enhanced.vbs`
++- Update detection method to use `DetectDRShortcut_Enhanced.vbs` content
++- No changes required for uninstallation command
++
++**Compatibility:**
++- v2.0.0 scripts can detect and work with shortcuts created by v1.0.0
++- Enhanced validation may require re-deployment in OneDrive sync environments
++- All existing functionality preserved with additional validation layers
++
++**Recommended Upgrade Path:**
++1. Deploy v2.0.0 creation script in SCCM
++2. Update detection method with v2.0.0 script content
++3. Test in pilot group before full deployment
++4. Monitor for any OneDrive sync related detection improvements 
+\ No newline at end of file
+diff --git a/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/CreateDRShortcut_Enhanced.vbs b/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/CreateDRShortcut_Enhanced.vbs
+new file mode 100644
+index 0000000..3179603
+--- /dev/null
++++ b/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/CreateDRShortcut_Enhanced.vbs
+@@ -0,0 +1,76 @@
++option explicit
++
++' Get script directory for icon path
++Dim ScriptPath
++ScriptPath = Left(WScript.ScriptFullName, InStrRev(WScript.ScriptFullName, "\"))
++
++' Hardcoded values to avoid command-line parameter issues
++Dim Title, Icon, Target, Arguments, WorkingDir
++
++Title = "Genesys Cloud DR"
++Icon = ScriptPath & "GenesysCloud_DR_256.ico"
++Target = "C:\Program Files\Google\Chrome\Application\chrome.exe"
++Arguments = "--app=https://login.mypurecloud.com/#/authenticate-adv/org/wawanesa-dr --force-dark-mode --no-first-run"
++WorkingDir = "C:\Program Files\Google\Chrome\Application\"
++
++' Objects
++Dim Shell, FileSystem, DesktopPath, IconPath, Shortcut
++
++Set Shell = CreateObject("WScript.Shell")
++Set FileSystem = CreateObject("Scripting.FileSystemObject")
++
++' Validate Chrome installation first
++If Not FileSystem.FileExists(Target) Then
++    ' Try alternative Chrome path
++    Target = "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
++    WorkingDir = "C:\Program Files (x86)\Google\Chrome\Application\"
++    If Not FileSystem.FileExists(Target) Then
++        ' Chrome not found, exit with error
++        WScript.Quit 1
++    End If
++End If
++
++' Validate icon file exists before proceeding
++If Not FileSystem.FileExists(Icon) Then
++    WScript.Quit 2
++End If
++
++' Set up paths
++DesktopPath = Shell.SpecialFolders("Desktop")
++IconPath = Shell.ExpandEnvironmentStrings("%USERPROFILE%") & "\AppData\Local\Microsoft\Windows"
++
++' Ensure icon destination directory exists
++On Error Resume Next
++If Not FileSystem.FolderExists(IconPath) Then
++    FileSystem.CreateFolder(IconPath)
++    If Err.Number <> 0 Then WScript.Quit 6
++End If
++On Error Goto 0
++
++' Copy icon to Windows folder
++On Error Resume Next
++FileSystem.CopyFile Icon, IconPath & "\", True
++If Err.Number <> 0 Then WScript.Quit 7
++On Error Goto 0
++
++' Create the shortcut
++On Error Resume Next
++Set Shortcut = Shell.CreateShortcut(DesktopPath & "\" & Title & ".lnk")
++If Err.Number <> 0 Then WScript.Quit 8
++
++Shortcut.TargetPath = Target
++Shortcut.Arguments = Arguments
++Shortcut.WorkingDirectory = WorkingDir
++Shortcut.IconLocation = IconPath & "\GenesysCloud_DR_256.ico, 0"
++Shortcut.WindowStyle = 3
++Shortcut.Save
++If Err.Number <> 0 Then WScript.Quit 9
++On Error Goto 0
++
++' Verify shortcut was created successfully
++If Not FileSystem.FileExists(DesktopPath & "\" & Title & ".lnk") Then
++    WScript.Quit 10
++End If
++
++' Success - exit code 0
++WScript.Quit 0 
+\ No newline at end of file
+diff --git a/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/DetectDRShortcut_Enhanced.vbs b/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/DetectDRShortcut_Enhanced.vbs
+new file mode 100644
+index 0000000..00378df
+--- /dev/null
++++ b/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/DetectDRShortcut_Enhanced.vbs
+@@ -0,0 +1,79 @@
++option explicit
++
++' Hardcoded values to avoid command-line parameter issues
++Dim Title, Icon, Targets, ArgumentPattern
++Title = "Genesys Cloud DR"
++Icon = "GenesysCloud_DR_256.ico"
++Targets = Array("C:\Program Files\Google\Chrome\Application\chrome.exe", "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe")
++ArgumentPattern = "--app=https://login.mypurecloud.com/#/authenticate-adv/org/wawanesa-dr"
++
++' Objects
++Dim Shell, FileSystem, DesktopPath, IconPath, Shortcut
++
++Set Shell = CreateObject("WScript.Shell")
++Set FileSystem = CreateObject("Scripting.FileSystemObject")
++DesktopPath = Shell.SpecialFolders("Desktop")
++IconPath = Shell.ExpandEnvironmentStrings("%USERPROFILE%") & "\AppData\Local\Microsoft\Windows"
++
++' Check if shortcut exists first
++If Not FileSystem.FileExists(DesktopPath & "\" & Title & ".lnk") Then
++    ' Not detected - shortcut doesn't exist, exit silently
++    WScript.Quit
++End If
++
++' Try to load shortcut properties
++On Error Resume Next
++Set Shortcut = Shell.CreateShortcut(DesktopPath & "\" & Title & ".lnk")
++If Err.Number <> 0 Then
++    ' Not detected - shortcut is corrupted, exit silently
++    WScript.Quit
++End If
++On Error Goto 0
++
++Dim TargetMatch, ArgumentMatch, IconMatch, TargetExists
++TargetMatch = False
++ArgumentMatch = False
++IconMatch = False
++TargetExists = False
++
++' Check if target matches one of our expected paths
++Dim i
++For i = 0 to UBound(Targets)
++    If StrComp(Targets(i), Shortcut.TargetPath, 1) = 0 Then
++        TargetMatch = True
++        ' Also verify the target file actually exists
++        If FileSystem.FileExists(Shortcut.TargetPath) Then
++            TargetExists = True
++        End If
++        Exit For
++    End If
++Next
++
++' Check if arguments contain the expected pattern
++If InStr(1, Shortcut.Arguments, ArgumentPattern, 1) > 0 Then
++    ArgumentMatch = True
++End If
++
++' Check if the icon file exists (critical for OneDrive sync issue)
++If FileSystem.FileExists(IconPath & "\" & Icon) Then
++    IconMatch = True
++End If
++
++' Additional validation: Check if shortcut icon location is set correctly
++Dim IconLocationMatch
++IconLocationMatch = False
++If InStr(1, Shortcut.IconLocation, Icon, 1) > 0 Then
++    IconLocationMatch = True
++End If
++
++' Output "DETECTED" only if ALL conditions are met - SCCM standard
++' 1. Target matches expected Chrome paths
++' 2. Target file actually exists (Chrome is installed)
++' 3. Arguments contain the expected URL pattern
++' 4. Icon file exists in the expected location
++' 5. Shortcut icon location points to our icon
++If TargetMatch = True AND TargetExists = True AND ArgumentMatch = True AND IconMatch = True AND IconLocationMatch = True Then
++    WScript.Echo "DETECTED"
++End If
++
++' If not detected, script exits silently (no output) - SCCM standard 
+\ No newline at end of file
+diff --git a/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/README.md b/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/README.md
+index 7be42b7..669bc8b 100644
+--- a/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/README.md
++++ b/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/README.md
+@@ -9,96 +9,174 @@ This SCCM application creates a desktop shortcut for the Genesys Cloud Disaster
+ 
+ ## Files
+ 
+-### Main VBS Scripts (Recommended)
+-These scripts are completely self-contained and don't require command-line arguments:
+-
+-- `CreateDRShortcut.vbs`: Creates the shortcut with hardcoded correct paths
+-- `DetectDRShortcut.vbs`: Detects if the shortcut is already installed
++### Production Scripts
++- `CreateDRShortcut_Enhanced.vbs`: Creates the shortcut with full validation and error handling
++- `DetectDRShortcut_Enhanced.vbs`: Detects installation with OneDrive sync protection
+ - `DeleteDRShortcut.vbs`: Removes the shortcut from the user's desktop
+-- `Shortcut-Truncation-Note.md`: Important documentation about the Windows shortcut properties display limitation
+-
+-### Alternative Approaches
+-These files require parameters and may have issues with paths containing spaces:
+-
+-- `CreateShortcut.vbs`: Creates the shortcut (requires command-line parameters)
+-- `DeleteShortcut.vbs`: Removes the shortcut (requires command-line parameters)
+-- `DetectShortcut.vbs`: Detects if the shortcut is already installed (has hardcoded values)
+-- `Install.cmd`: PowerShell-based installation
+-- `DirectInstall.cmd`: Direct PowerShell installation with hard-coded paths
+-- `Install-Alternative.cmd`: Alternative PowerShell installation
+ - `GenesysCloud_DR_256.ico`: Custom icon for the shortcut
++- `Shortcut-Truncation-Note.md`: Documentation about Windows shortcut properties display limitation
+ 
+ ## SCCM Configuration
+ 
+-### Recommended Configuration for 100% Silent Operation
+-For completely silent installation with no UI or popups:
+-
+-- **Installation Program**: `wscript.exe //B "CreateDRShortcut.vbs"`
++### Application Settings
++- **Installation Program**: `wscript.exe //B "CreateDRShortcut_Enhanced.vbs"`
+ - **Uninstallation Program**: `wscript.exe //B "DeleteDRShortcut.vbs"`
+-- **Detection Method**: `cscript.exe //nologo "DetectDRShortcut.vbs"`
+-
+-The `//B` flag runs the script in background mode, completely suppressing all UI elements, popups, and error messages. This ensures a 100% silent user experience.
+-
+-### Alternative Configurations
+-These may still potentially show UI elements or brief console windows:
+-
+-- **Option 1**: `cscript //nologo CreateDRShortcut.vbs` (console-based, may flash briefly)
+-- **Option 2**: `cmd.exe /c Install.cmd` (uses command wrappers)
+-
++- **Detection Method**: Script (VBScript) - Paste content of `DetectDRShortcut_Enhanced.vbs`
+ - **Dependencies**: Add App2-GenesysCloudDR-Extension as a dependency
+ - **User Experience**: Install for user
+ - **Target**: User-targeted application
+ 
+-### Application Display Name in Software Center
+-To set the correct application name that users see in Software Center:
+-1. In the SCCM console, go to the **Application** properties
+-2. On the **General** tab, set the **Name** and **User-Friendly Name** fields to "Genesys Cloud DR"
+-3. You can also set a description and other metadata that will appear in Software Center
+-4. The display name is not controlled by the scripts but by these application properties in SCCM
++**Key Points:**
++- The `//B` flag runs scripts in background mode, completely suppressing all UI elements and popups
+ 
+-## Preventing Windows Script Host Popups
++## Critical Issue: OneDrive Sync Detection Problem
+ 
+-The VBS scripts have been carefully designed to run silently without showing message boxes to users:
++### The Problem
++OneDrive sync can create shortcuts before SCCM deployment completes, leading to false positive detections:
+ 
+-- **Problem:** Using `WScript.Echo` in VBS scripts causes a Windows Script Host popup message that interrupts the user experience
+-- **Solution 1:** We've removed all `WScript.Echo` statements from the installation and uninstallation scripts
+-- **Solution 2:** Using `wscript.exe //B` to run scripts in background mode, which suppresses all UI elements including popups
+-- **Exception:** The detection script still uses `WScript.Echo "DETECTED"` because it's required for SCCM detection, but this doesn't cause a popup in the detection context
+-- **Implementation:** If you need to add any debugging or status messages, avoid using `WScript.Echo` as it will generate popups
+-- **Command Line Flags:**
+-  - `//B` - Runs in background mode with no UI (best for silent installation)
+-  - `//nologo` - Suppresses script host banner but doesn't prevent popups
++1. **OneDrive syncs shortcuts** from other devices to new laptops
++2. **Shortcuts appear WITHOUT icons** (OneDrive doesn't sync the icon files)
++3. **Basic detection would return "DETECTED"** even though the application isn't properly installed
++4. **SCCM would skip installation** thinking the app is already there
+ 
+-## Local Testing Outside SCCM
++### The Solution
++The detection script includes **icon file validation** to prevent false positives:
+ 
+-To test the silent behavior locally outside of SCCM:
++```vbs
++' Check if the icon file exists (critical for OneDrive sync issue)
++If FileSystem.FileExists(IconPath & "\" & Icon) Then
++    IconMatch = True
++End If
++```
+ 
+-1. **Test silent install:** `wscript.exe //B CreateDRShortcut.vbs`
+-2. **Test silent uninstall:** `wscript.exe //B DeleteDRShortcut.vbs`
+-3. **Test detection:** `cscript.exe //nologo DetectDRShortcut.vbs`
+-4. **Simulate SYSTEM context:** Use PsExec from Sysinternals: `psexec -s -i cmd.exe` then run the commands
+-5. **Verify by checking:** 
+-   - The shortcut appears/disappears without any visible UI
+-   - No popup dialogs appear at any point during execution
++**Detection Validates:**
++1. Shortcut exists
++2. Target path matches expected Chrome executable
++3. Arguments contain correct URL pattern  
++4. **Icon file exists in user's Windows folder** Γ¡É **KEY PROTECTION**
++5. Shortcut icon location points to our icon
++6. Chrome executable actually exists
++
++## SCCM Detection Methods
++
++### How SCCM Reads Detection
++Γ£à **Text Output Based**: 
++- **Detected**: Script outputs "DETECTED" 
++- **Not Detected**: Script outputs nothing and exits silently
++- **How SCCM reads it**: Uses `cscript.exe` internally to capture stdout
++
++Γ¥î **Exit Codes**: Not used for detection in SCCM Applications
++
++## VBScript Execution Modes
++
++### `wscript.exe` (GUI Mode)
++- **WScript.Echo behavior**: Shows popup dialogs
++- **With //B flag**: Suppresses error dialogs but WScript.Echo still shows popups
++- **SCCM compatibility**: Γ¥î SCCM can't read popup dialogs
++- **Use for**: Silent installation (`wscript.exe //B`)
++
++### `cscript.exe` (Console Mode)
++- **WScript.Echo behavior**: Writes to console (stdout)
++- **SCCM compatibility**: Γ£à SCCM can read stdout/stderr
++- **Use for**: Detection testing (`cscript.exe "DetectScript.vbs"`)
++
++## Script Features
++
++### CreateDRShortcut_Enhanced.vbs
++Γ£à **Chrome Installation Validation**: Checks both x64 and x86 Chrome paths  
++Γ£à **Icon File Validation**: Verifies source icon exists before proceeding  
++Γ£à **Directory Safety**: Creates required directories with error handling  
++Γ£à **Path Resolution**: Uses script directory instead of current working directory  
++Γ£à **Comprehensive Error Codes**: Specific exit codes for troubleshooting  
++
++**Exit Codes:**
++- `0` = Success
++- `1` = Chrome not found  
++- `2` = Icon file not found
++- `3-6` = Directory creation failures
++- `7` = Icon copy failure
++- `8-9` = Shortcut creation failure  
++- `10` = Shortcut verification failure
++
++### DetectDRShortcut_Enhanced.vbs
++Γ£à **OneDrive Sync Protection**: Validates icon file exists to prevent false positives  
++Γ£à **Target Validation**: Verifies Chrome executable actually exists  
++Γ£à **Corruption Protection**: Handles corrupted shortcut files gracefully  
++Γ£à **Icon Location Validation**: Checks shortcut's icon property  
++Γ£à **5-Point Validation**: Comprehensive validation system  
++
++## Local Testing
++
++### Test Installation and Detection
++```cmd
++# Test silent install
++wscript.exe //B "CreateDRShortcut_Enhanced.vbs"
++
++# Test detection (should show "DETECTED")
++cscript.exe "DetectDRShortcut_Enhanced.vbs"
++
++# Test silent uninstall  
++wscript.exe //B "DeleteDRShortcut.vbs"
++```
+ 
+-## Notes
++### Simulate SYSTEM Context
++```cmd
++# Use PsExec from Sysinternals
++psexec -s -i cmd.exe
++# Then run the test commands above
++```
+ 
+-- This application relies on the Chrome extension being installed by App2-GenesysCloudDR-Extension
+-- The shortcut points to the Chrome executable with parameters to load the extension and open the DR environment
+-- The custom icon provides visual differentiation between production and DR environments 
+-- **Important**: The shortcut properties window has a display limitation that truncates long command lines. This is only a display issue and does not affect functionality. See `Shortcut-Truncation-Note.md` for details.
++## Application Display Name in Software Center
++To set the application name users see in Software Center:
++1. In SCCM console, go to **Application** properties
++2. On the **General** tab, set **Name** and **User-Friendly Name** to "Genesys Cloud DR"
++3. Set description and other metadata for Software Center
++4. Display name is controlled by SCCM application properties, not the scripts
+ 
+ ## Working Shortcut Format
+ 
+-The correct shortcut target format is:
++The shortcut target format:
+ ```
+-"C:\Program Files\Google\Chrome\Application\chrome.exe" --app=https://login.mypurecloud.com/#/authenticate-adv/org/wawanesa-dr --force-dark-mode --user-data-dir="C:\Temp\GenesysPOC\ChromeUserData" --load-extension="C:\Program Files\GenesysPOC\ChromeExtension" --no-first-run
++"C:\Program Files\Google\Chrome\Application\chrome.exe" --app=https://login.mypurecloud.com/#/authenticate-adv/org/wawanesa-dr --force-dark-mode --no-first-run
+ ```
+ 
++### Chrome Profile Strategy
++
++**Current Approach (v2.1.0+):** Uses default Chrome profile
++- Γ£à **Seamless Microsoft Entra SSO**: Leverages existing authentication tokens
++- Γ£à **Extension Compatibility**: All Chrome extensions work immediately
++- Γ£à **No Caching Issues**: Extensions stay current, no temp folder cleanup needed
++- Γ£à **Better User Experience**: One-click access without re-authentication
++
++**Previous Approach (v2.0.0):** Used dedicated Chrome profile
++- Γ¥î **Extension Caching**: Old extension versions would get stuck in temp folder
++- Γ¥î **Additional Authentication**: Users had to re-authenticate for SSO
++- Γ¥î **Maintenance Overhead**: Required cleaning temp folders periodically
++
++### Chrome Arguments Explained
++
++- `--app=URL`: Opens Chrome in app mode (no browser UI, dedicated window)
++- `--force-dark-mode`: Forces Chrome UI to use dark theme
++- `--no-first-run`: Skips Chrome's initial setup screens and prompts
++
+ ## Troubleshooting
+ 
+-- The self-contained VBS scripts (`CreateDRShortcut.vbs`, etc.) are the most reliable way to create the correct shortcut with proper quotes around the paths.
+-- If you're having issues with quotes in paths, use the self-contained VBS scripts as they have the correct format hardcoded.
+-- If you encounter issues with one approach, try another as they use different methods of creating the shortcut.
+-- When checking the shortcut in the properties window, be aware that the Target field may appear truncated due to Windows display limitations. This does not affect functionality.
+-- If you're seeing Windows Script Host popups during installation, change the installation command to use `wscript.exe //B` instead of `cscript //nologo`. 
+\ No newline at end of file
++### Common Issues and Solutions
++
++**Problem**: Script fails with exit code 2  
++**Solution**: Icon file not found. Script automatically uses script directory.
++
++**Problem**: False positive detection with OneDrive sync  
++**Solution**: Detection script validates icon file existence to prevent this.
++
++**Problem**: Chrome not found during installation  
++**Solution**: Script checks both x64 and x86 Chrome paths automatically.
++
++**Problem**: Windows Script Host popups during installation  
++**Solution**: Use `wscript.exe //B` for silent execution.
++
++### General Notes
++- Scripts handle comprehensive validation and error scenarios
++- Shortcut properties window may show truncated Target field (display limitation only)
++- For OneDrive sync environments, icon validation prevents false positives
++- Always use `wscript.exe //B` for silent SCCM deployment 
+\ No newline at end of file
+diff --git a/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/RELEASE-NOTES.md b/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/RELEASE-NOTES.md
+new file mode 100644
+index 0000000..5a3c748
+--- /dev/null
++++ b/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/RELEASE-NOTES.md
+@@ -0,0 +1,293 @@
++# Release Notes - Genesys Cloud DR Shortcut v2.1.0
++
++**Release Date:** December 19, 2024  
++**Release Type:** Minor Version - SSO & Extension Optimization  
++**Compatibility:** SCCM Application Deployment  
++
++## ≡ƒÜÇ What's New in v2.1.0
++
++### Enterprise SSO Optimization
++The v2.1.0 release addresses critical enterprise authentication and extension compatibility requirements by **removing the dedicated Chrome profile** approach in favor of using the **default Chrome profile**.
++
++**Key Benefits:**
++- ≡ƒöÉ **Seamless Microsoft Entra SSO**: Leverages existing authentication tokens
++- ≡ƒöî **Full Extension Compatibility**: All Chrome extensions work immediately
++- ΓÜí **Faster Performance**: No profile initialization overhead
++- ≡ƒº╣ **Zero Maintenance**: No temp folder cleanup required
++
++### The Problem Solved
++**Previous Challenge (v2.0.0):**
++- Dedicated Chrome profile required users to re-authenticate via SSO
++- Chrome extensions (including visual indicators) had caching issues
++- Old extension versions would get stuck in temp profile folder
++- Required periodic cleanup of `C:\Temp\GenesysPOC\ChromeUserData`
++
++**New Solution (v2.1.0):**
++- Uses default Chrome profile with existing SSO tokens
++- Extensions work immediately with current versions
++- No temp folder dependencies or cleanup needed
++- One-click access to Genesys DR without authentication prompts
++
++## ≡ƒöº Technical Changes
++
++### Chrome Arguments Update
++**Previous (v2.0.0):**
++```cmd
++--app=URL --force-dark-mode --user-data-dir="C:\Temp\GenesysPOC\ChromeUserData" --no-first-run
++```
++
++**Current (v2.1.0):**
++```cmd
++--app=URL --force-dark-mode --no-first-run
++```
++
++### Script Improvements
++- Γ£à **Removed**: Dedicated profile creation logic
++- Γ£à **Removed**: Temp folder creation and management
++- Γ£à **Maintained**: All existing validation and error handling
++- Γ£à **Enhanced**: SSO and extension compatibility
++
++## ≡ƒôï Deployment Guide
++
++### SCCM Configuration (No Changes Required)
++
++**Installation Command:** *(Same as v2.0.0)*
++```cmd
++wscript.exe //B "CreateDRShortcut_Enhanced.vbs"
++```
++
++**Detection Method:** *(Same as v2.0.0)*
++- Type: Script (VBScript)
++- Content: Paste full content of `DetectDRShortcut_Enhanced.vbs`
++
++**Uninstall Command:** *(Same as v2.0.0)*
++```cmd
++wscript.exe //B "DeleteDRShortcut.vbs"
++```
++
++### Migration from v2.0.0
++
++**Required Actions:**
++1. Γ£à Update SCCM application package with v2.1.0 scripts
++2. Γ£à Test SSO functionality in pilot environment
++3. Γ£à Verify extension compatibility
++
++**Optional Cleanup:**
++- Remove existing temp folders: `C:\Temp\GenesysPOC\ChromeUserData` (will no longer be used)
++
++**No Configuration Changes:**
++- Γ£à Same SCCM detection method
++- Γ£à Same installation/uninstall commands
++- Γ£à Same validation and error handling
++
++## ≡ƒôê Performance & User Experience
++
++### Authentication Improvements
++- **v2.0.0:** Required re-authentication via Microsoft Entra SSO
++- **v2.1.0:** Seamless authentication using existing tokens
++
++### Extension Support
++- **v2.0.0:** Extension caching issues, old versions stuck in profile
++- **v2.1.0:** Current extensions work immediately, no caching problems
++
++### Startup Performance
++- **v2.0.0:** Profile initialization overhead
++- **v2.1.0:** Instant startup using existing profile
++
++### Maintenance
++- **v2.0.0:** Periodic temp folder cleanup required
++- **v2.1.0:** Zero maintenance overhead
++
++## ΓÜá∩╕Å Compatibility Notes
++
++### Backwards Compatibility
++- Γ£à **Fully Compatible**: v2.1.0 scripts work with shortcuts created by v2.0.0
++- Γ£à **No Breaking Changes**: Existing SCCM configuration remains valid
++- Γ£à **Enhanced Validation**: All existing validation logic preserved
++
++### Environment Requirements
++- **Chrome**: Same requirements as v2.0.0
++- **SCCM**: Same configuration as v2.0.0
++- **SSO**: Microsoft Entra ID (benefits from existing tokens)
++- **Extensions**: Works with all standard Chrome extensions
++
++## ≡ƒÄ» Enterprise Benefits
++
++### For IT Administrators
++- ≡ƒöº **Simplified Deployment**: No configuration changes required
++- ≡ƒôè **Better Monitoring**: Fewer user authentication issues
++- ≡ƒº╣ **Reduced Maintenance**: No temp folder cleanup needed
++- ≡ƒôê **Improved Success Rate**: Fewer SSO-related deployment failures
++
++### For End Users
++- ΓÜí **Instant Access**: No re-authentication prompts
++- ≡ƒöî **Full Functionality**: All Chrome extensions work immediately
++- ≡ƒÄ» **Consistent Experience**: Same Chrome environment as normal browsing
++- ≡ƒÆ¿ **Faster Performance**: Quicker startup times
++
++---
++
++**Deployment Recommendation:** Update to v2.1.0 immediately to benefit from improved SSO compatibility and extension support. No SCCM configuration changes required.
++
++---
++
++# Release Notes - Genesys Cloud DR Shortcut v2.0.0
++
++**Release Date:** December 19, 2024  
++**Release Type:** Major Version - Production Ready  
++**Compatibility:** SCCM Application Deployment  
++
++## ≡ƒÜÇ What's New
++
++### Critical OneDrive Sync Protection
++The most significant improvement in v2.0.0 addresses a critical issue discovered in enterprise environments where **OneDrive sync creates shortcuts before SCCM deployment**, leading to false positive detections.
++
++**The Problem Solved:**
++- OneDrive syncs shortcuts from other devices to new laptops
++- Shortcuts appear WITHOUT icons (OneDrive doesn't sync icon files)
++- Basic detection incorrectly reports "DETECTED" 
++- SCCM skips installation thinking the app is already installed
++
++**The Solution:**
++- Enhanced detection validates icon file existence
++- Prevents false positives in OneDrive-enabled environments
++- Ensures applications are only marked as "detected" when properly installed
++
++### Enhanced Validation & Reliability
++
++**5-Point Validation System:**
++1. Γ£à Shortcut file existence
++2. Γ£à Target path verification (Chrome executable)
++3. Γ£à Argument pattern matching (DR URL)
++4. Γ£à **Icon file validation** (OneDrive protection)
++5. Γ£à Shortcut icon location verification
++
++**Chrome Installation Detection:**
++- Automatically detects x64 and x86 Chrome installations
++- Fallback logic for different installation paths
++- Prevents failures on systems with non-standard Chrome locations
++
++**Comprehensive Error Handling:**
++- Specific exit codes (0-10) for different failure scenarios
++- Graceful handling of corrupted shortcuts
++- Directory creation with error validation
++
++## ≡ƒöº Technical Improvements
++
++### Path Resolution Enhancement
++- **Fixed:** Script directory resolution using `WScript.ScriptFullName`
++- **Solved:** Exit code 2 failures when run from different working directories
++- **Improved:** Icon file location now relative to script location
++
++### SCCM Compatibility Optimization
++- **Detection Method:** Follows SCCM text-output conventions (not exit codes)
++- **Silent Execution:** Enhanced `//B` flag compatibility
++- **Error Handling:** Proper silent failure modes for enterprise deployment
++
++### Security & Validation
++- Multiple validation checkpoints prevent incomplete installations
++- File existence verification before all operations
++- Enhanced corruption detection and recovery
++
++## ≡ƒôï Deployment Guide
++
++### SCCM Configuration
++
++**Installation Command:**
++```cmd
++wscript.exe //B "CreateDRShortcut_Enhanced.vbs"
++```
++
++**Detection Method:**
++- Type: Script (VBScript)
++- Content: Paste full content of `DetectDRShortcut_Enhanced.vbs`
++
++**Uninstall Command:**
++```cmd
++wscript.exe //B "DeleteDRShortcut.vbs"
++```
++
++### Pre-Deployment Checklist
++
++- [ ] Verify `GenesysCloud_DR_256.ico` is in the same directory as scripts
++- [ ] Test installation in pilot environment
++- [ ] Validate detection in OneDrive sync environment
++- [ ] Confirm Chrome is available on target systems
++- [ ] Update SCCM application with new script content
++
++### Testing Commands
++
++**Local Testing:**
++```cmd
++# Test installation
++wscript.exe //B "CreateDRShortcut_Enhanced.vbs"
++
++# Test detection
++cscript.exe "DetectDRShortcut_Enhanced.vbs"
++
++# Test uninstall
++wscript.exe //B "DeleteDRShortcut.vbs"
++```
++
++## ΓÜá∩╕Å Breaking Changes
++
++### Detection Method Update Required
++- **v1.0.0 Detection:** Basic shortcut validation only
++- **v2.0.0 Detection:** Includes icon file validation (OneDrive protection)
++
++**Impact:** Shortcuts created by v1.0.0 without proper icon installation may not be detected by v2.0.0 detection script. This is intentional behavior to ensure proper installation validation.
++
++**Mitigation:** Update SCCM detection method with v2.0.0 script content.
++
++## ≡ƒÉ¢ Issues Resolved
++
++| Issue | Description | Resolution |
++|-------|-------------|------------|
++| OneDrive False Positives | Detection reported installed when only shortcut synced | Icon validation prevents false positives |
++| Exit Code 2 Failures | Script failed when icon not in working directory | Path resolution uses script directory |
++| Chrome Path Variations | Failed on x86 or non-standard Chrome paths | Multi-path detection with fallback |
++| Silent Execution Issues | Popups during SCCM deployment | Enhanced `//B` flag handling |
++
++## ≡ƒôê Performance & Reliability
++
++### Validation Improvements
++- **v1.0.0:** 2-point basic validation
++- **v2.0.0:** 5-point comprehensive validation
++
++### Error Handling
++- **v1.0.0:** Basic error handling
++- **v2.0.0:** Specific exit codes with detailed error scenarios
++
++### Environment Support
++- **Enhanced:** OneDrive sync environments
++- **Enhanced:** Variable Chrome installation paths
++- **Enhanced:** SCCM enterprise deployment scenarios
++
++## ≡ƒö« Future Considerations
++
++### Monitoring Recommendations
++- Monitor SCCM deployment success rates in OneDrive environments
++- Track detection accuracy improvements
++- Validate error code distribution for troubleshooting
++
++### Potential Enhancements
++- Additional browser support (if required)
++- Enhanced logging capabilities (if needed for troubleshooting)
++- Registry-based detection alternatives (if file-based validation limitations discovered)
++
++## ≡ƒô₧ Support Information
++
++### Troubleshooting
++See `README.md` for comprehensive troubleshooting guide including:
++- Common error codes and solutions
++- OneDrive sync environment considerations
++- SCCM deployment best practices
++
++### Documentation
++- `README.md`: Complete deployment and configuration guide
++- `CHANGELOG.md`: Detailed version history and changes
++- `Shortcut-Truncation-Note.md`: Windows shortcut display limitations
++
++---
++
++**Deployment Recommendation:** Test in pilot environment before enterprise-wide rollout to validate OneDrive sync protection effectiveness in your specific environment. 
+\ No newline at end of file
+diff --git a/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/CreateShortcut.vbs b/Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/examples/CreateShortcut.vbs
+similarity index 100%
+rename from Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/CreateShortcut.vbs
+rename to Genesys/GenesysCloud-DR-Apps/App1-GenesysCloudDR-Shortcut/examples/CreateShortcut.vbs

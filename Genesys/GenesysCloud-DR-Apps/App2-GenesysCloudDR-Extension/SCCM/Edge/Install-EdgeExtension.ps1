@@ -1,4 +1,4 @@
-﻿$ExtensionData = "pkggbpdkbnahidijamikngnlpfgepabn;https://edge.microsoft.com/extensionwebstorebase/v1/crx"
+$ExtensionData = "pkggbpdkbnahidijamikngnlpfgepabn;https://edge.microsoft.com/extensionwebstorebase/v1/crx"
 
 function Test-RegistryValue {
     param (

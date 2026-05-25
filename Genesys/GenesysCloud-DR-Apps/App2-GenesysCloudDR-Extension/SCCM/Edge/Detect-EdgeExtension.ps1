@@ -1,4 +1,4 @@
-﻿$ExtensionID = "pkggbpdkbnahidijamikngnlpfgepabn"
+$ExtensionID = "pkggbpdkbnahidijamikngnlpfgepabn"
 
 $Compliant = $False
 

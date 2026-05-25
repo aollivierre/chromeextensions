@@ -1,4 +1,4 @@
-﻿$ExtensionData = "bekjclbbemboommhkppfcdpeaddfajnm;https://clients2.google.com/service/update2/crx"
+$ExtensionData = "bekjclbbemboommhkppfcdpeaddfajnm;https://clients2.google.com/service/update2/crx"
 
 
 function Test-RegistryValue {

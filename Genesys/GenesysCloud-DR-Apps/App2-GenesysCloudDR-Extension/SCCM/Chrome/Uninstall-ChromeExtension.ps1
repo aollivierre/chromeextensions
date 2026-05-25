@@ -1,4 +1,4 @@
-﻿$ExtensionID = "bekjclbbemboommhkppfcdpeaddfajnm"
+$ExtensionID = "bekjclbbemboommhkppfcdpeaddfajnm"
 
 $(Get-Item HKLM:\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist).GetValueNames() | Where-Object {$_ -ne ""} | ForEach-Object {
     if ($(Get-ItemPropertyValue -Path HKLM:\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist -Name $_).Trim() -like "$($ExtensionID);*") {
